@@ -18,3 +18,11 @@ gladvent = ">= 2.0.2 and < 3.0.0"
 
 [dev-dependencies]
 gleeunit = ">= 1.0.0 and < 2.0.0"
+
+[gladvent.2024.1]
+pt_1 = 2367773
+pt_2 = 21271939
+
+[gladvent.2024.2]
+pt_1 = 472
+pt_2 = 520

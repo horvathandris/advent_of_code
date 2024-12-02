@@ -8,11 +8,9 @@ pub type ParsedInput =
   List(List(Int))
 
 pub fn parse(input: String) -> ParsedInput {
-  string.split(input, "\n")
-  |> list.map(fn(line) {
-    string.split(line, " ")
-    |> list.map(parse_int)
-  })
+  use line <- list.map(string.split(input, "\n"))
+  string.split(line, " ")
+  |> list.map(parse_int)
 }
 
 fn parse_int(input: String) -> Int {
@@ -21,11 +19,11 @@ fn parse_int(input: String) -> Int {
 }
 
 pub fn pt_1(input: ParsedInput) -> Int {
-  list.map(input, fn(row) {
+  list.filter(input, fn(row) {
     let assert [current, ..rest] = row
     fold_row_loop(current, rest, order.Eq)
   })
-  |> list.count(fn(safe) { safe })
+  |> list.length
 }
 
 fn fold_row_loop(current: Int, rest: List(Int), ord: order.Order) -> Bool {
@@ -50,7 +48,7 @@ fn fold_row_loop(current: Int, rest: List(Int), ord: order.Order) -> Bool {
 }
 
 pub fn pt_2(input: ParsedInput) -> Int {
-  list.map(input, fn(row) {
+  list.filter(input, fn(row) {
     let assert [current, ..rest] = row
     case fold_row_loop(current, rest, order.Eq) {
       True -> True
@@ -63,14 +61,13 @@ pub fn pt_2(input: ParsedInput) -> Int {
       }
     }
   })
-  |> list.count(fn(safe) { safe })
+  |> list.length
 }
 
 fn create_permutations(original: List(Int)) -> List(List(Int)) {
   let keyed_original = list.index_map(original, fn(item, i) { #(i, item) })
 
-  list.index_map(original, fn(_, i) {
-    let assert Ok(#(_, new_row)) = list.key_pop(keyed_original, i)
-    list.map(new_row, fn(level) { level.1 })
-  })
+  use _, i <- list.index_map(original)
+  let assert Ok(#(_, new_row)) = list.key_pop(keyed_original, i)
+  list.map(new_row, fn(level) { level.1 })
 }

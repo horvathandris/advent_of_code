@@ -1,6 +1,5 @@
 import gleam/int
 import gleam/list
-import gleam/result
 import gleam/string
 
 pub type ParsedInput =
@@ -21,13 +20,11 @@ fn parse_int(input: String) -> Int {
 }
 
 pub fn pt_1(input: ParsedInput) -> Int {
-  list.map2(
-    list.sort(input.0, int.compare),
-    list.sort(input.1, int.compare),
-    fn(left, right) { int.absolute_value(left - right) },
-  )
-  |> list.reduce(int.add)
-  |> result.lazy_unwrap(fn() { 0 })
+  let sort_list = list.sort(_, int.compare)
+  list.map2(sort_list(input.0), sort_list(input.1), fn(left, right) {
+    int.absolute_value(left - right)
+  })
+  |> list.fold(0, int.add)
 }
 
 pub fn pt_2(input: ParsedInput) -> Int {
@@ -36,6 +33,5 @@ pub fn pt_2(input: ParsedInput) -> Int {
     |> list.length
     |> int.multiply(left)
   })
-  |> list.reduce(int.add)
-  |> result.lazy_unwrap(fn() { 0 })
+  |> list.fold(0, int.add)
 }

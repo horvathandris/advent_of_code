@@ -8,18 +8,10 @@ pub type ParsedInput =
   List(List(Int))
 
 pub fn parse(input: String) -> ParsedInput {
-  string.split(input, " ")
-  |> list.fold([[]], fn(acc, number) {
-    case string.split_once(number, "\n") {
-      Ok(#(number1, number2)) -> {
-        let assert [current_row, ..rest] = acc
-        [[parse_int(number2)], [parse_int(number1), ..current_row], ..rest]
-      }
-      _ -> {
-        let assert [current_row, ..rest] = acc
-        [[parse_int(number), ..current_row], ..rest]
-      }
-    }
+  string.split(input, "\n")
+  |> list.map(fn(line) {
+    string.split(line, " ")
+    |> list.map(parse_int)
   })
 }
 

@@ -7,39 +7,17 @@ pub type ParsedInput =
   #(List(Int), List(Int))
 
 pub fn parse(input: String) -> ParsedInput {
-  parse_loop(input, #([], []), True)
-}
-
-fn parse_loop(
-  input: String,
-  accumulator: ParsedInput,
-  left_col: Bool,
-) -> ParsedInput {
-  case left_col {
-    True -> {
-      let assert Ok(#(number, rest)) = string.split_once(input, "   ")
-      parse_loop(rest, new_accumulator(number, accumulator, False), False)
-    }
-    False -> {
-      case string.split_once(input, "\n") {
-        Ok(#(number, rest)) ->
-          parse_loop(rest, new_accumulator(number, accumulator, True), True)
-        _ -> new_accumulator(input, accumulator, True)
-      }
-    }
-  }
+  string.split(input, "\n")
+  |> list.map(fn(line) {
+    let assert Ok(#(left, right)) = string.split_once(line, "   ")
+    #(parse_int(left), parse_int(right))
+  })
+  |> list.unzip
 }
 
 fn parse_int(input: String) -> Int {
   let assert Ok(int) = int.parse(input)
   int
-}
-
-fn new_accumulator(input: String, acc: ParsedInput, left: Bool) -> ParsedInput {
-  case left {
-    True -> #([parse_int(input), ..acc.0], acc.1)
-    False -> #(acc.0, [parse_int(input), ..acc.1])
-  }
 }
 
 pub fn pt_1(input: ParsedInput) -> Int {

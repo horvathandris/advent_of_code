@@ -31,7 +31,7 @@ fn fold_row_loop(current: Int, rest: List(Int), ord: order.Order) -> Bool {
     [] -> True
     [next, ..rest] -> {
       let diff = int.subtract(current, next)
-      case or(and(diff < 4, diff > 0), and(diff > -4, diff < 0)) {
+      case in_range(diff, -3, -1) || in_range(diff, 1, 3) {
         True ->
           case ord {
             order.Eq -> fold_row_loop(next, rest, int.compare(current, next))
@@ -45,6 +45,10 @@ fn fold_row_loop(current: Int, rest: List(Int), ord: order.Order) -> Bool {
       }
     }
   }
+}
+
+fn in_range(number: Int, min: Int, max: Int) -> Bool {
+  and(number >= min, number <= max)
 }
 
 pub fn pt_2(input: ParsedInput) -> Int {

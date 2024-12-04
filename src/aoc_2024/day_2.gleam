@@ -1,4 +1,4 @@
-import gleam/bool.{and, or}
+import gleam/bool.{and}
 import gleam/int
 import gleam/list
 import gleam/order

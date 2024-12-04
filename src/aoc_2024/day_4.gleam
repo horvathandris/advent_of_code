@@ -42,103 +42,77 @@ fn search_for_x(input: Matrix, location: Location, accumulator: Int) -> Int {
 
 fn check_xmas(input: Matrix, location: Location) -> Int {
   generate_sequences(location, input.size)
-  |> list.map(fn(seq) {
-    list.map(seq, dict.get(input.matrix, _))
+  |> list.map(fn(sequence) {
+    list.map(sequence, dict.get(input.matrix, _))
     |> result.all
-    |> result.try(verify_sequence(_, 0))
+    |> result.map(string.join(_, ""))
+    |> result.try(verify_sequence(_))
   })
   |> list.count(result.is_ok)
 }
 
-fn verify_sequence(
-  sequence: List(String),
-  index: Int,
-) -> Result(List(String), Nil) {
-  let char = char_for_index(index)
+fn verify_sequence(sequence: String) -> Result(Nil, Nil) {
   case sequence {
-    [first, ..rest] if first == char -> verify_sequence(rest, index + 1)
-    [] -> Ok([])
+    "MAS" -> Ok(Nil)
     _ -> Error(Nil)
   }
 }
 
-fn char_for_index(index: Int) {
-  case index {
-    0 -> "M"
-    1 -> "A"
-    _ -> "S"
-  }
-}
-
 fn generate_sequences(location: Location, size: Int) -> List(List(Location)) {
-  let sequences =
-    [east, southeast, south, southwest, west, northwest, north, northeast]
-    |> list.map(fn(f) { f(location) })
-  use sequence <- list.filter(sequences)
+  use sequence <- list.filter(direction_sequences(location))
   list.all(sequence, check_out_of_bounds(_, size))
 }
 
-fn east(location: Location) -> List(Location) {
+fn direction_sequences(location: Location) -> List(List(Location)) {
   [
-    #(location.0, location.1 + 1),
-    #(location.0, location.1 + 2),
-    #(location.0, location.1 + 3),
-  ]
-}
-
-fn southeast(location: Location) -> List(Location) {
-  [
-    #(location.0 + 1, location.1 + 1),
-    #(location.0 + 2, location.1 + 2),
-    #(location.0 + 3, location.1 + 3),
-  ]
-}
-
-fn south(location: Location) -> List(Location) {
-  [
-    #(location.0 + 1, location.1),
-    #(location.0 + 2, location.1),
-    #(location.0 + 3, location.1),
-  ]
-}
-
-fn southwest(location: Location) -> List(Location) {
-  [
-    #(location.0 + 1, location.1 - 1),
-    #(location.0 + 2, location.1 - 2),
-    #(location.0 + 3, location.1 - 3),
-  ]
-}
-
-fn west(location: Location) -> List(Location) {
-  [
-    #(location.0, location.1 - 1),
-    #(location.0, location.1 - 2),
-    #(location.0, location.1 - 3),
-  ]
-}
-
-fn northwest(location: Location) -> List(Location) {
-  [
-    #(location.0 - 1, location.1 - 1),
-    #(location.0 - 2, location.1 - 2),
-    #(location.0 - 3, location.1 - 3),
-  ]
-}
-
-fn north(location: Location) -> List(Location) {
-  [
-    #(location.0 - 1, location.1),
-    #(location.0 - 2, location.1),
-    #(location.0 - 3, location.1),
-  ]
-}
-
-fn northeast(location: Location) -> List(Location) {
-  [
-    #(location.0 - 1, location.1 + 1),
-    #(location.0 - 2, location.1 + 2),
-    #(location.0 - 3, location.1 + 3),
+    // east
+    [
+      #(location.0, location.1 + 1),
+      #(location.0, location.1 + 2),
+      #(location.0, location.1 + 3),
+    ],
+    // southeast
+    [
+      #(location.0 + 1, location.1 + 1),
+      #(location.0 + 2, location.1 + 2),
+      #(location.0 + 3, location.1 + 3),
+    ],
+    // south
+    [
+      #(location.0 + 1, location.1),
+      #(location.0 + 2, location.1),
+      #(location.0 + 3, location.1),
+    ],
+    // southwest
+    [
+      #(location.0 + 1, location.1 - 1),
+      #(location.0 + 2, location.1 - 2),
+      #(location.0 + 3, location.1 - 3),
+    ],
+    // west
+    [
+      #(location.0, location.1 - 1),
+      #(location.0, location.1 - 2),
+      #(location.0, location.1 - 3),
+    ],
+    // northwest
+    [
+      #(location.0 - 1, location.1 - 1),
+      #(location.0 - 2, location.1 - 2),
+      #(location.0 - 3, location.1 - 3),
+    ],
+    // north
+    [
+      #(location.0 - 1, location.1),
+      #(location.0 - 2, location.1),
+      #(location.0 - 3, location.1),
+    ],
+    // northeast
+    [
+      #(location.0 - 1, location.1 + 1),
+      #(location.0 - 2, location.1 + 2),
+      #(location.0 - 3, location.1 + 3),
+    ],
   ]
 }
 

@@ -1,25 +1,28 @@
+import gleam/dict.{type Dict}
 import gleam/int
 import gleam/io
 import gleam/list
+import gleam/result
 import gleam/string
-
-pub type Rule =
-  #(Int, Int)
 
 pub type Update =
   List(Int)
 
 pub type Updates {
-  Updates(rules: List(Rule), updates: List(Update))
+  Updates(rules: Dict(Int, List(Int)), updates: List(Update))
 }
 
 pub fn parse(input: String) -> Updates {
   let #(rules, updates) = split_once(input, "\n\n")
   let rules =
     string.split(rules, "\n")
-    |> list.map(fn(rule) {
+    |> list.fold(dict.new(), fn(map, rule) {
       let #(a, b) = split_once(rule, "|")
-      #(parse_int(a), parse_int(b))
+      dict.get(map, parse_int(a))
+      |> result.map(fn(existing) {
+        dict.insert(map, parse_int(a), [parse_int(b), ..existing])
+      })
+      |> result.unwrap(dict.insert(map, parse_int(a), [parse_int(b)]))
     })
   let updates =
     string.split(updates, "\n")

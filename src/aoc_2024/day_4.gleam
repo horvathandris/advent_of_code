@@ -1,5 +1,6 @@
 import gleam/bool
 import gleam/dict.{type Dict}
+import gleam/int
 import gleam/list
 import gleam/result
 import gleam/string
@@ -26,22 +27,32 @@ pub fn parse(input: String) -> Matrix {
 }
 
 pub fn pt_1(input: Matrix) -> Int {
-  search_for_x(input, #(0, 0), 0)
+  use input, location <- search_for_char(input, #(0, 0), 0, "X")
+  check_xmas(input, location, direction_sequences)
 }
 
-fn search_for_x(input: Matrix, location: Location, accumulator: Int) -> Int {
-  let assert Ok(char) = dict.get(input.matrix, location)
-  let new_accumulator = case char {
-    "X" -> accumulator + check_xmas(input, location)
+fn search_for_char(
+  input: Matrix,
+  location: Location,
+  accumulator: Int,
+  character: String,
+  checker: fn(Matrix, Location) -> Int,
+) -> Int {
+  let new_accumulator = case dict.get(input.matrix, location) {
+    Ok(char) if char == character -> accumulator + checker(input, location)
     _ -> accumulator
   }
   next_location(location, input.size)
-  |> result.map(search_for_x(input, _, new_accumulator))
+  |> result.map(search_for_char(input, _, new_accumulator, character, checker))
   |> result.unwrap(new_accumulator)
 }
 
-fn check_xmas(input: Matrix, location: Location) -> Int {
-  generate_sequences(location, input.size)
+fn check_xmas(
+  input: Matrix,
+  location: Location,
+  sequence_generator: fn(Location) -> List(List(Location)),
+) -> Int {
+  generate_sequences(location, input.size, sequence_generator)
   |> list.map(fn(sequence) {
     list.map(sequence, dict.get(input.matrix, _))
     |> result.all
@@ -58,8 +69,12 @@ fn verify_sequence(sequence: String) -> Result(Nil, Nil) {
   }
 }
 
-fn generate_sequences(location: Location, size: Int) -> List(List(Location)) {
-  use sequence <- list.filter(direction_sequences(location))
+fn generate_sequences(
+  location: Location,
+  size: Int,
+  generator: fn(Location) -> List(List(Location)),
+) -> List(List(Location)) {
+  use sequence <- list.filter(generator(location))
   list.all(sequence, check_out_of_bounds(_, size))
 }
 
@@ -129,5 +144,33 @@ fn check_out_of_bounds(location: Location, size: Int) -> Bool {
 }
 
 pub fn pt_2(input: Matrix) -> Int {
-  todo as "part 2 not implemented"
+  use input, location <- search_for_char(input, #(0, 0), 0, "A")
+  check_xmas(input, location, cross_sequences)
+  |> int.floor_divide(2)
+  |> result.unwrap(0)
+}
+
+fn cross_sequences(location: Location) {
+  [
+    [
+      #(location.0 - 1, location.1 - 1),
+      #(location.0, location.1),
+      #(location.0 + 1, location.1 + 1),
+    ],
+    [
+      #(location.0 - 1, location.1 + 1),
+      #(location.0, location.1),
+      #(location.0 + 1, location.1 - 1),
+    ],
+    [
+      #(location.0 + 1, location.1 + 1),
+      #(location.0, location.1),
+      #(location.0 - 1, location.1 - 1),
+    ],
+    [
+      #(location.0 + 1, location.1 - 1),
+      #(location.0, location.1),
+      #(location.0 - 1, location.1 + 1),
+    ],
+  ]
 }

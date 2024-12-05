@@ -2,6 +2,7 @@ import gleam/dict.{type Dict}
 import gleam/int
 import gleam/io
 import gleam/list
+import gleam/option
 import gleam/result
 import gleam/set.{type Set}
 import gleam/string
@@ -42,11 +43,13 @@ fn parse_int(input: String) -> Int {
   int
 }
 
-pub fn pt_1(input: Updates) {
-  let valid_updates =
-    list.filter(input.updates, check_rules(_, set.new(), input.rules))
+pub fn pt_1(input: Updates) -> Int {
+  list.filter(input.updates, check_rules(_, set.new(), input.rules))
+  |> add_middle_numbers
+}
 
-  list.map(valid_updates, fn(update) {
+fn add_middle_numbers(updates: List(List(Int))) {
+  list.map(updates, fn(update) {
     let assert Ok(to_drop) =
       list.length(update)
       |> int.floor_divide(2)
@@ -60,7 +63,7 @@ pub fn pt_1(input: Updates) {
 
 fn check_rules(
   pages_to_check: List(Int),
-  pages_seen: set.Set(Int),
+  pages_seen: Set(Int),
   rules: Dict(Int, List(Int)),
 ) {
   case pages_to_check {
@@ -79,6 +82,56 @@ fn check_rules(
   }
 }
 
-pub fn pt_2(input: Updates) {
-  todo as "part 2 not implemented"
+pub fn pt_2(input: Updates) -> Int {
+  list.filter(input.updates, fn(update) {
+    !check_rules(update, set.new(), input.rules)
+  })
+  |> list.map(fn(update) {
+    let relevant_rules =
+      list.fold(update, input.rules, fn(acc, num) {
+        dict.upsert(acc, num, fn(x) {
+          case x {
+            option.None -> []
+            option.Some(y) -> y
+          }
+        })
+      })
+      |> dict.filter(fn(k, _) { list.contains(update, k) })
+      |> dict.to_list
+      |> list.map(fn(entry) {
+        #(entry.0, list.filter(entry.1, list.contains(update, _)))
+      })
+      |> dict.from_list
+
+    let no_incoming_edge_nodes =
+      dict.filter(relevant_rules, fn(_, edges) { list.is_empty(edges) })
+      |> dict.keys
+
+    kahns_loop(no_incoming_edge_nodes, [], relevant_rules)
+  })
+  |> add_middle_numbers
+}
+
+fn kahns_loop(unseen: List(Int), sorted: List(Int), rules: Dict(Int, List(Int))) {
+  case unseen {
+    [] -> sorted
+    [head, ..tail] -> {
+      let updated_rules =
+        dict.map_values(rules, fn(_, edges) {
+          case list.contains(edges, head) {
+            True -> list.filter(edges, fn(x) { x != head })
+            False -> edges
+          }
+        })
+        |> dict.filter(fn(k, _) { k != head })
+
+      let to_see =
+        dict.to_list(updated_rules)
+        |> list.filter(fn(num_and_edges) { list.is_empty(num_and_edges.1) })
+        |> list.map(fn(num_and_edges) { num_and_edges.0 })
+        |> list.drop_while(fn(num) { list.contains(unseen, num) })
+
+      kahns_loop(list.append(tail, to_see), [head, ..sorted], updated_rules)
+    }
+  }
 }

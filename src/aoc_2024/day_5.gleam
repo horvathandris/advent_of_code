@@ -3,6 +3,7 @@ import gleam/int
 import gleam/io
 import gleam/list
 import gleam/result
+import gleam/set.{type Set}
 import gleam/string
 
 pub type Update =
@@ -42,8 +43,40 @@ fn parse_int(input: String) -> Int {
 }
 
 pub fn pt_1(input: Updates) {
-  io.debug(input)
-  todo as "part 1 not implemented"
+  let valid_updates =
+    list.filter(input.updates, check_rules(_, set.new(), input.rules))
+
+  list.map(valid_updates, fn(update) {
+    let assert Ok(to_drop) =
+      list.length(update)
+      |> int.floor_divide(2)
+
+    list.drop(update, to_drop)
+    |> list.first
+    |> result.unwrap(0)
+  })
+  |> list.fold(0, int.add)
+}
+
+fn check_rules(
+  pages_to_check: List(Int),
+  pages_seen: set.Set(Int),
+  rules: Dict(Int, List(Int)),
+) {
+  case pages_to_check {
+    [] -> True
+    [page, ..tail] ->
+      case
+        dict.get(rules, page)
+        |> result.unwrap([])
+        |> list.all(fn(rule) {
+          list.contains(tail, rule) || !set.contains(pages_seen, rule)
+        })
+      {
+        True -> check_rules(tail, set.insert(pages_seen, page), rules)
+        False -> False
+      }
+  }
 }
 
 pub fn pt_2(input: Updates) {

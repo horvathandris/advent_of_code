@@ -1,9 +1,10 @@
 import gleam/dict
-import gleam/function
 import gleam/list
 import gleam/option.{type Option, None, Some}
+import gleam/result
 import gleam/set.{type Set}
 import gleam/string
+import parallel_map
 
 pub type Location =
   #(Int, Int)
@@ -104,13 +105,17 @@ fn turn_guard(guard: Guard) -> Guard {
 }
 
 pub fn pt_2(input: Matrix) -> Int {
+  let fun = fn(location) {
+    patrol_loop_mod(
+      Matrix(dict.insert(input.matrix, location, True), input.size, input.guard),
+      set.new(),
+    )
+  }
+
   patrol_loop(input, set.new())
   |> set.to_list
-  |> list.map(dict.insert(input.matrix, _, True))
-  |> list.map(fn(new_matrix) {
-    patrol_loop_mod(Matrix(new_matrix, input.size, input.guard), set.new())
-  })
-  |> list.count(function.identity)
+  |> parallel_map.list_pmap(fun, parallel_map.MatchSchedulersOnline, 1000)
+  |> list.count(result.unwrap(_, False))
 }
 
 fn patrol_loop_mod(input: Matrix, seen: Set(Guard)) -> Bool {

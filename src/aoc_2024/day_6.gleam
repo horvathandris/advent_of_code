@@ -1,5 +1,5 @@
 import gleam/dict
-import gleam/io
+import gleam/function
 import gleam/list
 import gleam/option.{type Option, None, Some}
 import gleam/set.{type Set}
@@ -104,60 +104,43 @@ fn turn_guard(guard: Guard) -> Guard {
 }
 
 pub fn pt_2(input: Matrix) -> Int {
-  patrol_loop_mod(input, #(#(0, 0, 0, 0), 0), set.new())
-  |> set.size
+  dict.keys(input.matrix)
+  |> list.map(fn(loc) {
+    case dict.get(input.matrix, loc) {
+      Ok(False) -> Some(dict.insert(input.matrix, loc, True))
+      _ -> None
+    }
+  })
+  |> list.filter_map(option.to_result(_, Nil))
+  |> list.map(fn(new_matrix) {
+    patrol_loop_mod(Matrix(new_matrix, input.size, input.guard), set.new())
+  })
+  |> list.count(function.identity)
 }
 
-fn patrol_loop_mod(
-  input: Matrix,
-  movements: #(#(Int, Int, Int, Int), Int),
-  seen: Set(Location),
-) -> Set(Location) {
+fn patrol_loop_mod(input: Matrix, seen: Set(Guard)) -> Bool {
   case next_location(input.size, input.guard) {
-    None -> seen
+    None -> False
     Some(location) ->
-      case dict.get(input.matrix, location) {
-        Ok(False) -> {
-          let new_movements = case movements {
-            #(m, 0) -> #(#(m.0 + 1, m.1, m.2, m.3), 0)
-            #(m, 1) -> #(#(m.0, m.1 + 1, m.2, m.3), 1)
-            #(m, 2) -> #(#(m.0, m.1, m.2 + 1, m.3), 2)
-            #(m, _) -> #(#(m.0, m.1, m.2, m.3 + 1), 3)
+      case set.contains(seen, Guard(location, input.guard.direction)) {
+        True -> True
+        False ->
+          case dict.get(input.matrix, location) {
+            Ok(False) ->
+              patrol_loop_mod(
+                Matrix(
+                  input.matrix,
+                  input.size,
+                  Guard(location, input.guard.direction),
+                ),
+                set.insert(seen, input.guard),
+              )
+            _ ->
+              patrol_loop_mod(
+                Matrix(input.matrix, input.size, turn_guard(input.guard)),
+                set.insert(seen, input.guard),
+              )
           }
-          io.debug(location)
-          io.debug(new_movements)
-          let new_seen = case new_movements {
-            #(#(m1, m2, m3, m4), _)
-              if { m1 == m3 && m2 + 1 == m4 || m2 + 1 == m4 && m1 > m3 }
-              && m1 > 0
-              && m2 > 0
-              && m3 > 0
-              && m4 > 0
-            -> set.insert(seen, location)
-            _ -> seen
-          }
-          io.debug("new_seen: " <> string.inspect(new_seen))
-          patrol_loop_mod(
-            Matrix(
-              input.matrix,
-              input.size,
-              Guard(location, input.guard.direction),
-            ),
-            new_movements,
-            new_seen,
-          )
-        }
-        _ -> {
-          let new_movements = case movements {
-            #(m, 3) -> #(#(m.1, m.2, m.3, 0), 3)
-            #(m, i) -> #(m, i + 1)
-          }
-          patrol_loop_mod(
-            Matrix(input.matrix, input.size, turn_guard(input.guard)),
-            new_movements,
-            seen,
-          )
-        }
       }
   }
 }

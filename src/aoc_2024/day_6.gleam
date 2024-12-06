@@ -1,6 +1,7 @@
 import gleam/dict
-import gleam/io
 import gleam/list
+import gleam/option.{type Option, None, Some}
+import gleam/set.{type Set}
 import gleam/string
 
 pub type Location =
@@ -43,8 +44,63 @@ pub fn parse(input: String) -> Matrix {
 }
 
 pub fn pt_1(input: Matrix) -> Int {
-  io.debug(input)
-  todo as "part 1 not implemented"
+  patrol_loop(input, set.new())
+  |> set.size
+}
+
+fn patrol_loop(input: Matrix, seen: Set(Location)) -> Set(Location) {
+  case next_location(input.size, input.guard) {
+    None -> set.insert(seen, input.guard.location)
+    Some(location) -> {
+      case dict.get(input.matrix, location) {
+        Ok(False) ->
+          patrol_loop(
+            Matrix(
+              input.matrix,
+              input.size,
+              Guard(location, input.guard.direction),
+            ),
+            set.insert(seen, input.guard.location),
+          )
+        _ ->
+          patrol_loop(
+            Matrix(input.matrix, input.size, turn_guard(input.guard)),
+            set.insert(seen, input.guard.location),
+          )
+      }
+    }
+  }
+}
+
+fn next_location(size: Int, guard: Guard) -> Option(Location) {
+  case guard.direction {
+    North -> #(guard.location.0 - 1, guard.location.1)
+    East -> #(guard.location.0, guard.location.1 + 1)
+    South -> #(guard.location.0 + 1, guard.location.1)
+    West -> #(guard.location.0, guard.location.1 - 1)
+  }
+  |> validate_location(size)
+}
+
+fn validate_location(location: Location, size: Int) -> Option(Location) {
+  case between(location.0, 0, size - 1) && between(location.1, 0, size - 1) {
+    True -> Some(location)
+    _ -> None
+  }
+}
+
+fn between(num: Int, min: Int, max: Int) -> Bool {
+  num >= min && num <= max
+}
+
+fn turn_guard(guard: Guard) -> Guard {
+  case guard.direction {
+    North -> East
+    East -> South
+    South -> West
+    West -> North
+  }
+  |> Guard(guard.location, _)
 }
 
 pub fn pt_2(input: Matrix) -> Int {

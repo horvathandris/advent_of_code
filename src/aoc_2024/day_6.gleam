@@ -104,14 +104,9 @@ fn turn_guard(guard: Guard) -> Guard {
 }
 
 pub fn pt_2(input: Matrix) -> Int {
-  dict.keys(input.matrix)
-  |> list.map(fn(loc) {
-    case dict.get(input.matrix, loc) {
-      Ok(False) -> Some(dict.insert(input.matrix, loc, True))
-      _ -> None
-    }
-  })
-  |> list.filter_map(option.to_result(_, Nil))
+  patrol_loop(input, set.new())
+  |> set.to_list
+  |> list.map(dict.insert(input.matrix, _, True))
   |> list.map(fn(new_matrix) {
     patrol_loop_mod(Matrix(new_matrix, input.size, input.guard), set.new())
   })

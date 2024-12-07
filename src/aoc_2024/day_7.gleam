@@ -1,6 +1,8 @@
 import gleam/int
 import gleam/list
+import gleam/result
 import gleam/string
+import parallel_map
 
 pub type Equation {
   Equation(result: Int, numbers: List(Int))
@@ -9,6 +11,7 @@ pub type Equation {
 type Operator {
   Plus
   Times
+  Concat
 }
 
 pub fn parse(input: String) -> List(Equation) {
@@ -27,27 +30,39 @@ fn parse_int(input: String) -> Int {
 
 pub fn pt_1(input: List(Equation)) -> Int {
   use accumulator, problem <- list.fold(input, 0)
-  case solve_problem(problem) {
+  case solve_problem(problem, [Plus, Times]) {
     True -> problem.result
     False -> 0
   }
   + accumulator
 }
 
-fn solve_problem(input: Equation) -> Bool {
+fn solve_problem(input: Equation, operators: List(Operator)) -> Bool {
+  // todo: this count should be a fold_until that stops when first True is reached
   list.length(input.numbers)
-  |> fn(length) { permutations_with_repetition([Plus, Times], length - 1) }
+  |> fn(length) { permutations_with_repetition(operators, length - 1) }
   |> list.count(fn(permutation) {
     let assert [head, ..tail] = input.numbers
 
     input.result
     == {
-      use acc, num <- list.fold(tail, #(head, permutation))
-      let assert [operator, ..remaining] = acc.1
-      case operator {
-        Plus -> #(acc.0 + num, remaining)
-        Times -> #(acc.0 * num, remaining)
-      }
+      list.fold_until(tail, #(head, permutation), fn(acc, num) {
+        case head > input.result {
+          True -> list.Stop(acc)
+          False -> {
+            let assert [operator, ..remaining] = acc.1
+            case operator {
+              Plus -> #(acc.0 + num, remaining)
+              Times -> #(acc.0 * num, remaining)
+              Concat -> #(
+                parse_int(int.to_string(acc.0) <> int.to_string(num)),
+                remaining,
+              )
+            }
+            |> list.Continue
+          }
+        }
+      })
     }.0
   })
   > 0
@@ -68,5 +83,19 @@ fn permutations_with_repetition(
 }
 
 pub fn pt_2(input: List(Equation)) -> Int {
-  todo as "part 2 not implemented"
+  let fun = fn(problem) {
+    case solve_problem(problem, [Concat, Times, Plus]) {
+      True -> problem.result
+      False -> 0
+    }
+  }
+
+  parallel_map.list_pmap(
+    input,
+    fun,
+    parallel_map.MatchSchedulersOnline,
+    100_000,
+  )
+  |> list.map(result.unwrap(_, 0))
+  |> list.fold(0, int.add)
 }

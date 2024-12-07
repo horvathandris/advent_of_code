@@ -41,31 +41,36 @@ fn solve_problem(input: Equation, operators: List(Operator)) -> Bool {
   // todo: this count should be a fold_until that stops when first True is reached
   list.length(input.numbers)
   |> fn(length) { permutations_with_repetition(operators, length - 1) }
-  |> list.count(fn(permutation) {
+  |> list.fold_until(False, fn(_, permutation) {
     let assert [head, ..tail] = input.numbers
 
-    input.result
-    == {
-      list.fold_until(tail, #(head, permutation), fn(acc, num) {
-        case head > input.result {
-          True -> list.Stop(acc)
-          False -> {
-            let assert [operator, ..remaining] = acc.1
-            case operator {
-              Plus -> #(acc.0 + num, remaining)
-              Times -> #(acc.0 * num, remaining)
-              Concat -> #(
-                parse_int(int.to_string(acc.0) <> int.to_string(num)),
-                remaining,
-              )
+    let is_solution =
+      input.result
+      == {
+        list.fold_until(tail, #(head, permutation), fn(acc, num) {
+          case head > input.result {
+            True -> list.Stop(acc)
+            False -> {
+              let assert [operator, ..remaining] = acc.1
+              case operator {
+                Plus -> #(acc.0 + num, remaining)
+                Times -> #(acc.0 * num, remaining)
+                Concat -> #(
+                  parse_int(int.to_string(acc.0) <> int.to_string(num)),
+                  remaining,
+                )
+              }
+              |> list.Continue
             }
-            |> list.Continue
           }
-        }
-      })
-    }.0
+        })
+      }.0
+
+    case is_solution {
+      True -> list.Stop(True)
+      False -> list.Continue(False)
+    }
   })
-  > 0
 }
 
 fn permutations_with_repetition(

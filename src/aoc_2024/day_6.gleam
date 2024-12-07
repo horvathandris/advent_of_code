@@ -51,25 +51,13 @@ pub fn pt_1(input: Matrix) -> Int {
 }
 
 fn patrol_loop(input: Matrix, seen: Set(Location)) -> Set(Location) {
-  case next_location(input.size, input.guard) {
+  case move_guard(input, Some(input.guard)) {
     None -> set.insert(seen, input.guard.location)
-    Some(location) ->
-      case dict.get(input.matrix, location) {
-        Ok(False) ->
-          patrol_loop(
-            Matrix(
-              input.matrix,
-              input.size,
-              Guard(location, input.guard.direction),
-            ),
-            set.insert(seen, input.guard.location),
-          )
-        _ ->
-          patrol_loop(
-            Matrix(input.matrix, input.size, turn_guard(input.guard)),
-            set.insert(seen, input.guard.location),
-          )
-      }
+    Some(guard) ->
+      patrol_loop(
+        Matrix(input.matrix, input.size, guard),
+        set.insert(seen, input.guard.location),
+      )
   }
 }
 
@@ -108,7 +96,7 @@ pub fn pt_2(input: Matrix) -> Int {
   let fun = fn(location) {
     patrol_loop_mod(
       Matrix(dict.insert(input.matrix, location, True), input.size, input.guard),
-      set.new(),
+      move_guard(input, Some(input.guard)),
     )
   }
 
@@ -118,29 +106,33 @@ pub fn pt_2(input: Matrix) -> Int {
   |> list.count(result.unwrap(_, False))
 }
 
-fn patrol_loop_mod(input: Matrix, seen: Set(Guard)) -> Bool {
-  case next_location(input.size, input.guard) {
+fn patrol_loop_mod(input: Matrix, fast: Option(Guard)) -> Bool {
+  case move_guard(input, Some(input.guard)) {
     None -> False
-    Some(location) ->
-      case set.contains(seen, Guard(location, input.guard.direction)) {
-        True -> True
-        False ->
+    Some(guard) -> {
+      let new_fast = move_guard(input, move_guard(input, fast))
+      case new_fast, Some(guard) == new_fast {
+        None, _ -> False
+        _, True -> True
+        _, False ->
+          patrol_loop_mod(Matrix(input.matrix, input.size, guard), new_fast)
+      }
+    }
+  }
+}
+
+fn move_guard(input: Matrix, guard: Option(Guard)) -> Option(Guard) {
+  case guard {
+    None -> None
+    Some(guard) ->
+      case next_location(input.size, guard) {
+        None -> None
+        Some(location) ->
           case dict.get(input.matrix, location) {
-            Ok(False) ->
-              patrol_loop_mod(
-                Matrix(
-                  input.matrix,
-                  input.size,
-                  Guard(location, input.guard.direction),
-                ),
-                set.insert(seen, input.guard),
-              )
-            _ ->
-              patrol_loop_mod(
-                Matrix(input.matrix, input.size, turn_guard(input.guard)),
-                set.insert(seen, input.guard),
-              )
+            Ok(False) -> Guard(location, guard.direction)
+            _ -> turn_guard(guard)
           }
+          |> Some
       }
   }
 }

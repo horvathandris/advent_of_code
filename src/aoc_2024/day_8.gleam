@@ -1,6 +1,7 @@
 import gleam/dict.{type Dict}
 import gleam/list
 import gleam/option.{None, Some}
+import gleam/result
 import gleam/set.{type Set}
 import gleam/string
 
@@ -41,34 +42,12 @@ pub fn pt_1(input: Map) {
   |> list.fold(set.new(), fn(top_acc, locations) {
     list.combination_pairs(locations)
     |> list.fold(set.new(), fn(acc, pair) {
-      let dist = calc_dist(pair.0, pair.1)
-
-      let antinode1 =
-        apply_dist(pair.1, dist)
-        |> validate_location(input.size)
-
-      let antinode2 =
-        negate_dist(dist)
-        |> apply_dist(pair.0, _)
-        |> validate_location(input.size)
-
-      acc
-      |> insert_if_valid(antinode1)
-      |> insert_if_valid(antinode2)
+      find_antinodes(pair.0, pair.1, input.size)
+      |> set.union(acc)
     })
     |> set.union(top_acc)
   })
   |> set.size
-}
-
-fn insert_if_valid(
-  s: Set(Location),
-  location: Result(Location, Nil),
-) -> Set(Location) {
-  case location {
-    Ok(loc) -> set.insert(s, loc)
-    _ -> s
-  }
 }
 
 fn validate_location(location: Location, size: Int) {
@@ -93,5 +72,63 @@ fn negate_dist(distance: #(Int, Int)) {
 }
 
 pub fn pt_2(input: Map) {
-  todo as "part 2 not implemented"
+  dict.values(input.antennas)
+  |> list.fold(set.new(), fn(top_acc, locations) {
+    list.combination_pairs(locations)
+    |> list.fold(set.new(), fn(acc, pair) {
+      find_antinodes_loop(pair.0, pair.1, input.size)
+      |> set.union(acc)
+    })
+    |> set.union(top_acc)
+  })
+  |> set.size
+}
+
+fn find_antinodes_loop(
+  location1: Location,
+  location2: Location,
+  size: Int,
+) -> Set(Location) {
+  let dist = calc_dist(location1, location2)
+
+  let antinodes1 = get_antinodes(location2, dist, size)
+  let antinodes2 = negate_dist(dist) |> get_antinodes(location1, _, size)
+
+  set.union(antinodes1, antinodes2)
+}
+
+fn get_antinodes(
+  location: Location,
+  dist: #(Int, Int),
+  size: Int,
+) -> Set(Location) {
+  case
+    apply_dist(location, dist)
+    |> validate_location(size)
+  {
+    Ok(antinode) -> get_antinodes(antinode, dist, size)
+    _ -> set.new()
+  }
+  |> set.insert(location)
+}
+
+fn find_antinodes(
+  location1: Location,
+  location2: Location,
+  size: Int,
+) -> Set(Location) {
+  let dist = calc_dist(location1, location2)
+
+  let antinode1 =
+    apply_dist(location2, dist)
+    |> validate_location(size)
+
+  let antinode2 =
+    negate_dist(dist)
+    |> apply_dist(location1, _)
+    |> validate_location(size)
+
+  [antinode1, antinode2]
+  |> result.values
+  |> set.from_list
 }

@@ -14,7 +14,7 @@ version = "1.0.0"
 
 [dependencies]
 gleam_stdlib = ">= 0.34.0 and < 2.0.0"
-gladvent = ">= 2.0.2 and < 3.0.0"
+gladvent = ">= 2.1.0 and < 3.0.0"
 # gladvent = { path = "../gladvent" }
 parallel_map = ">= 2.1.0 and < 3.0.0"
 
@@ -44,3 +44,10 @@ pt_2 = 5799
 [gladvent.2024.6]
 pt_1 = 4665
 pt_2 = 1688
+
+[gladvent.2024.7]
+pt_1 = 1620690235709
+pt_2 = 145397611075341
+
+[gladvent.2024.8]
+pt_1 = 394

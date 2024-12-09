@@ -1,6 +1,7 @@
 import gleam/int
 import gleam/list
 import gleam/string
+import util
 
 pub type ParsedInput =
   #(List(Int), List(Int))
@@ -9,14 +10,9 @@ pub fn parse(input: String) -> ParsedInput {
   string.split(input, "\n")
   |> list.map(fn(line) {
     let assert Ok(#(left, right)) = string.split_once(line, "   ")
-    #(parse_int(left), parse_int(right))
+    #(util.parse_int(left), util.parse_int(right))
   })
   |> list.unzip
-}
-
-fn parse_int(input: String) -> Int {
-  let assert Ok(int) = int.parse(input)
-  int
 }
 
 pub fn pt_1(input: ParsedInput) -> Int {

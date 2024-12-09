@@ -5,6 +5,7 @@ import gleam/option
 import gleam/result
 import gleam/set.{type Set}
 import gleam/string
+import util
 
 pub type Update =
   List(Int)
@@ -19,15 +20,17 @@ pub fn parse(input: String) -> Updates {
     string.split(rules, "\n")
     |> list.fold(dict.new(), fn(map, rule) {
       let #(a, b) = split_once(rule, "|")
-      dict.get(map, parse_int(a))
+      dict.get(map, util.parse_int(a))
       |> result.map(fn(existing) {
-        dict.insert(map, parse_int(a), [parse_int(b), ..existing])
+        dict.insert(map, util.parse_int(a), [util.parse_int(b), ..existing])
       })
-      |> result.unwrap(dict.insert(map, parse_int(a), [parse_int(b)]))
+      |> result.unwrap(dict.insert(map, util.parse_int(a), [util.parse_int(b)]))
     })
   let updates =
     string.split(updates, "\n")
-    |> list.map(fn(update) { string.split(update, ",") |> list.map(parse_int) })
+    |> list.map(fn(update) {
+      string.split(update, ",") |> list.map(util.parse_int)
+    })
 
   Updates(rules:, updates:)
 }
@@ -35,11 +38,6 @@ pub fn parse(input: String) -> Updates {
 fn split_once(input: String, separator: String) -> #(String, String) {
   let assert Ok(split) = string.split_once(input, separator)
   split
-}
-
-fn parse_int(input: String) -> Int {
-  let assert Ok(int) = int.parse(input)
-  int
 }
 
 pub fn pt_1(input: Updates) -> Int {

@@ -3,6 +3,7 @@ import gleam/int
 import gleam/list
 import gleam/order
 import gleam/string
+import util
 
 pub type ParsedInput =
   List(List(Int))
@@ -10,12 +11,7 @@ pub type ParsedInput =
 pub fn parse(input: String) -> ParsedInput {
   use line <- list.map(string.split(input, "\n"))
   string.split(line, " ")
-  |> list.map(parse_int)
-}
-
-fn parse_int(input: String) -> Int {
-  let assert Ok(int) = int.parse(input)
-  int
+  |> list.map(util.parse_int)
 }
 
 pub fn pt_1(input: ParsedInput) -> Int {

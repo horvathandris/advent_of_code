@@ -1,4 +1,5 @@
 import gleam/int
+import gleam/io
 import gleam/list
 import gleam/option.{None, Some}
 import gleam/string
@@ -96,6 +97,67 @@ fn repartition_loop(input: List(Block)) -> List(Block) {
   }
 }
 
+fn repartition_loop_mod(input: List(Block)) -> List(Block) {
+  let assert Ok(#(file, blocks)) =
+    input
+    |> list.pop(fn(block) {
+      case block {
+        File(_, _) -> True
+        Empty(_) -> False
+      }
+    })
+
+  let result =
+    blocks
+    |> list.reverse
+    |> io.debug
+    |> list.map_fold(Some(file), fn(acc, block) {
+      case acc {
+        Some(f) ->
+          case block {
+            Empty(empty_width) ->
+              case empty_width >= f.width {
+                False -> #(acc, [block])
+                _ ->
+                  case empty_width == f.width {
+                    True -> #(None, [f])
+                    _ -> #(None, [f, Empty(empty_width - f.width)])
+                  }
+              }
+            _ -> #(acc, [block])
+          }
+        _ -> #(acc, [block])
+      }
+    })
+    |> fn(x) {
+      #(
+        x.0,
+        list.flatten(x.1)
+          |> list.reverse,
+      )
+    }
+    |> io.debug
+
+  case result {
+    #(Some(f), new_blocks) -> [f, ..new_blocks]
+    #(_, new_blocks) -> repartition_loop(new_blocks)
+  }
+}
+
 pub fn pt_2(input: DiskMap) -> Int {
-  todo as "part 2 not implemented"
+  repartition_loop_mod(input.blocks)
+  |> list.reverse
+  |> io.debug
+  |> list.fold(#(0, 0), fn(acc, block) {
+    case block {
+      File(width, id) -> #(
+        acc.0 + width,
+        list.range(0, width - 1)
+          |> list.fold(0, fn(file_sum, i) { file_sum + { acc.0 + i } * id })
+          |> int.add(acc.1),
+      )
+      _ -> acc
+    }
+  })
+  |> fn(x) { x.1 }
 }

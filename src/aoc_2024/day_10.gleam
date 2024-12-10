@@ -23,10 +23,25 @@ pub fn parse(input: String) -> Map {
   |> result.lazy_unwrap(dict.new)
 }
 
-pub fn pt_1(input: Map) {
-  todo as "part 1 not implemented"
+pub fn pt_1(input: Map) -> Int {
+  dict.filter(input, fn(_, height) { height == 0 })
+  |> dict.to_list
+  |> list.map(fn(start_node) { [start_node] })
+  |> dfs(input, _, [])
+  |> list.length
 }
 
-pub fn pt_2(input: Map) {
+fn dfs(
+  input: Map,
+  incomplete_paths: List(List(#(Location, Int))),
+  complete_paths: List(List(#(Location, Int))),
+) -> List(List(#(Location, Int))) {
+  case incomplete_paths {
+    [] -> complete_paths
+    [head, ..tail] -> todo
+  }
+}
+
+pub fn pt_2(input: Map) -> Int {
   todo as "part 2 not implemented"
 }

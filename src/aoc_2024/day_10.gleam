@@ -36,10 +36,50 @@ fn dfs(
   incomplete_paths: List(List(#(Location, Int))),
   complete_paths: List(List(#(Location, Int))),
 ) -> List(List(#(Location, Int))) {
+  io.println("")
+  io.println("incomplete: " <> string.inspect(incomplete_paths))
+  io.println("  complete: " <> string.inspect(complete_paths))
   case incomplete_paths {
     [] -> complete_paths
-    [head, ..tail] -> todo
+    [incomplete_path, ..rest] -> {
+      let assert [last_location, ..nodes] = incomplete_path
+
+      get_neighbours(last_location.0)
+      |> list.filter_map(fn(neighbour) {
+        case dict.get(input, neighbour) {
+          Ok(height) if height == last_location.1 + 1 ->
+            Ok(#(neighbour, height))
+          _ -> Error(Nil)
+        }
+      })
+      |> io.debug
+      |> list.flat_map(fn(neighbour) {
+        case neighbour {
+          #(_, 9) ->
+            dfs(input, rest, [
+              [neighbour, last_location, ..nodes],
+              ..complete_paths
+            ])
+          _ ->
+            dfs(
+              input,
+              [[neighbour, last_location, ..nodes], ..rest],
+              complete_paths,
+            )
+        }
+      })
+      |> list.append(complete_paths)
+    }
   }
+}
+
+fn get_neighbours(location: Location) {
+  [
+    #(location.0 - 1, location.1),
+    #(location.0, location.1 + 1),
+    #(location.0 + 1, location.1),
+    #(location.0, location.1 - 1),
+  ]
 }
 
 pub fn pt_2(input: Map) -> Int {

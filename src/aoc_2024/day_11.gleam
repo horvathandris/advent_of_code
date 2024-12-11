@@ -1,9 +1,7 @@
+import gleam/dict.{type Dict}
 import gleam/int
-import gleam/io
 import gleam/list
-import gleam/result
 import gleam/string
-import parallel_map
 import util
 
 pub fn parse(input: String) -> List(Int) {
@@ -12,34 +10,46 @@ pub fn parse(input: String) -> List(Int) {
 }
 
 pub fn pt_1(input: List(Int)) -> Int {
-  // let fun = fn(stone) { blink_n_times([stone], 25) }
-  // parallel_map.list_pmap(input, fun, parallel_map.WorkerAmount(8), 100_000)
-  // |> list.map(result.lazy_unwrap(_, fn() { [] }))
-  // |> list.map(list.length)
-  // |> list.fold(0, int.add)
-  blink_n_times(input, 25)
+  count_stones_after_n_blinks(input, 25)
 }
 
-fn blink_n_times(stones: List(Int), n: Int) -> Int {
+pub fn pt_2(input: List(Int)) -> Int {
+  count_stones_after_n_blinks(input, 75)
+}
+
+fn count_stones_after_n_blinks(input: List(Int), n: Int) {
+  list.map_fold(input, dict.new(), fn(mem, stone) { score(stone, n, mem) }).1
+  |> list.fold(0, int.add)
+}
+
+fn score(
+  stone: Int,
+  n: Int,
+  mem: Dict(#(Int, Int), Int),
+) -> #(Dict(#(Int, Int), Int), Int) {
   case n {
-    0 -> list.length(stones)
+    0 -> #(mem, 1)
     _ ->
-      list.fold(stones, 0, fn(acc, stone) {
-        {
+      case dict.get(mem, #(stone, n)) {
+        Ok(s) -> #(mem, s)
+        _ ->
           case stone {
-            0 -> [1]
+            0 -> score(1, n - 1, mem)
             _ -> {
               let digits = number_of_digits(stone, 0)
               case digits % 2 == 0 {
-                True -> split_stone(stone, digits)
-                _ -> [stone * 2024]
+                True -> {
+                  let #(first, second) = split_stone(stone, digits)
+                  let #(mem, first_score) = score(first, n - 1, mem)
+                  let #(mem, second_score) = score(second, n - 1, mem)
+                  #(mem, first_score + second_score)
+                }
+                _ -> score(stone * 2024, n - 1, mem)
               }
             }
           }
-          |> blink_n_times(n - 1)
-        }
-        + acc
-      })
+          |> fn(x) { #(dict.insert(x.0, #(stone, n), x.1), x.1) }
+      }
   }
 }
 
@@ -50,16 +60,8 @@ fn number_of_digits(stone: Int, digits: Int) -> Int {
   }
 }
 
-fn split_stone(stone: Int, digits: Int) -> List(Int) {
+fn split_stone(stone: Int, digits: Int) -> #(Int, Int) {
   let half_digits = digits / 2
   let divisor = util.power(10, half_digits)
-  [stone / divisor, stone % divisor]
-}
-
-pub fn pt_2(input: List(Int)) -> Int {
-  let fun = fn(stone) { blink_n_times([stone], 45) }
-  parallel_map.list_pmap(input, fun, parallel_map.WorkerAmount(8), 100_000)
-  |> list.map(result.lazy_unwrap(_, fn() { 0 }))
-  |> list.fold(0, int.add)
-  // blink_n_times(input, 30)
+  #(stone / divisor, stone % divisor)
 }

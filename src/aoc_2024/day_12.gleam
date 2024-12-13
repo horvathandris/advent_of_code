@@ -1,17 +1,9 @@
+import gleam/bool
 import gleam/dict
 import gleam/int
-import gleam/io
 import gleam/list
-import gleam/result
 import gleam/set.{type Set}
 import gleam/string
-
-type Direction {
-  East
-  South
-  West
-  North
-}
 
 pub type Location =
   #(Int, Int)
@@ -35,8 +27,6 @@ pub fn parse(input: String) -> Map {
 }
 
 pub fn pt_1(input: Map) -> Int {
-  // region growing, with each region added, recalc perimeter, and area (just add 1)
-
   find_regions(dict.keys(input) |> set.from_list, [], input)
   |> list.map(fn(region) { set.size(region.plants) * region.perimeter })
   |> list.fold(0, int.add)
@@ -104,5 +94,67 @@ fn get_valid_neighours(
 }
 
 pub fn pt_2(input: Map) -> Int {
-  todo as "part 2 not implemented"
+  find_regions(dict.keys(input) |> set.from_list, [], input)
+  |> list.map(fn(region) { region.plants })
+  |> list.map(fn(plants) { set.size(plants) * count_corners(plants) })
+  |> list.fold(0, int.add)
+}
+
+fn count_corners(plants: Set(Location)) -> Int {
+  let concave_corners =
+    set.fold(plants, 0, fn(acc1, location) {
+      [
+        // top right concave
+        #([#(location.0 - 1, location.1), #(location.0, location.1 + 1)], #(
+          location.0 - 1,
+          location.1 + 1,
+        )),
+        // bottom right concave
+        #([#(location.0, location.1 + 1), #(location.0 + 1, location.1)], #(
+          location.0 + 1,
+          location.1 + 1,
+        )),
+        // bottom left concave
+        #([#(location.0 + 1, location.1), #(location.0, location.1 - 1)], #(
+          location.0 + 1,
+          location.1 - 1,
+        )),
+        // top left concave
+        #([#(location.0, location.1 - 1), #(location.0 - 1, location.1)], #(
+          location.0 - 1,
+          location.1 - 1,
+        )),
+      ]
+      |> list.fold(0, fn(acc2, possible_corner) {
+        {
+          list.all(possible_corner.0, set.contains(plants, _))
+          && !set.contains(plants, possible_corner.1)
+        }
+        |> bool.to_int
+        |> int.add(acc2)
+      })
+      |> int.add(acc1)
+    })
+
+  let convex_corners =
+    set.fold(plants, 0, fn(acc1, location) {
+      [
+        // top right convex
+        [#(location.0 - 1, location.1), #(location.0, location.1 + 1)],
+        // bottom right convex
+        [#(location.0, location.1 + 1), #(location.0 + 1, location.1)],
+        // bottom left convex
+        [#(location.0 + 1, location.1), #(location.0, location.1 - 1)],
+        // top left convex
+        [#(location.0, location.1 - 1), #(location.0 - 1, location.1)],
+      ]
+      |> list.fold(0, fn(acc2, possible_corner) {
+        !list.any(possible_corner, set.contains(plants, _))
+        |> bool.to_int
+        |> int.add(acc2)
+      })
+      |> int.add(acc1)
+    })
+
+  concave_corners + convex_corners
 }

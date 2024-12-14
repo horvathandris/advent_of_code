@@ -1,12 +1,10 @@
+import common.{type Location}
 import gleam/dict.{type Dict}
 import gleam/list
 import gleam/option.{None, Some}
 import gleam/result
 import gleam/set.{type Set}
 import gleam/string
-
-pub type Location =
-  #(Int, Int)
 
 pub type Map {
   Map(antennas: Dict(String, List(Location)), size: Int)

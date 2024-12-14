@@ -1,12 +1,10 @@
+import common.{type Location}
 import gleam/bool
 import gleam/dict
 import gleam/int
 import gleam/list
 import gleam/set.{type Set}
 import gleam/string
-
-pub type Location =
-  #(Int, Int)
 
 pub type Map =
   dict.Dict(Location, String)

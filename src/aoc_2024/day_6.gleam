@@ -1,3 +1,4 @@
+import common.{type Location}
 import gleam/dict
 import gleam/list
 import gleam/option.{type Option, None, Some}
@@ -5,9 +6,6 @@ import gleam/result
 import gleam/set.{type Set}
 import gleam/string
 import parallel_map
-
-pub type Location =
-  #(Int, Int)
 
 pub type Direction {
   North

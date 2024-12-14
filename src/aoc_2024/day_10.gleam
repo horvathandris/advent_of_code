@@ -1,3 +1,4 @@
+import common.{type Location}
 import gleam/dict.{type Dict}
 import gleam/int
 import gleam/list
@@ -5,9 +6,6 @@ import gleam/result
 import gleam/set.{type Set}
 import gleam/string
 import util
-
-pub type Location =
-  #(Int, Int)
 
 pub type Map =
   Dict(Location, Int)

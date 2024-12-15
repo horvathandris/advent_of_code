@@ -37,19 +37,15 @@ pub fn pt_1(input: List(Robot)) -> Int {
 fn move_robots_n_times(grid: Grid, n: Int) -> Grid {
   case n <= 0 {
     True -> grid
-    False -> {
-      let grid = move_robots(grid)
-      // print_grid(grid)
-      move_robots_n_times(grid, n - 1)
-    }
+    False ->
+      move_robots(grid)
+      |> move_robots_n_times(n - 1)
   }
 }
 
 fn move_robots(grid: Grid) -> Grid {
-  Grid(
-    ..grid,
-    robots: list.map(grid.robots, fn(robot) { move_robot(robot, grid.size) }),
-  )
+  list.map(grid.robots, move_robot(_, grid.size))
+  |> Grid(grid.size)
 }
 
 fn move_robot(robot: Robot, bounds: #(Int, Int)) -> Robot {
@@ -80,16 +76,15 @@ fn get_quadrants(bounds: #(Int, Int)) -> List(#(#(Int, Int), #(Int, Int))) {
 }
 
 fn calculate_safety(grid: Grid) -> Int {
-  get_quadrants(grid.size)
-  |> list.fold(1, fn(acc, quadrant) {
-    list.count(grid.robots, fn(robot) {
-      robot.position.0 >= quadrant.0.0
-      && robot.position.0 <= quadrant.0.1
-      && robot.position.1 >= quadrant.1.0
-      && robot.position.1 <= quadrant.1.1
-    })
-    * acc
-  })
+  use acc, quadrant <- list.fold(get_quadrants(grid.size), 1)
+  {
+    use robot <- list.count(grid.robots)
+    robot.position.0 >= quadrant.0.0
+    && robot.position.0 <= quadrant.0.1
+    && robot.position.1 >= quadrant.1.0
+    && robot.position.1 <= quadrant.1.1
+  }
+  * acc
 }
 
 pub fn pt_2(input: List(Robot)) -> Int {

@@ -1,4 +1,4 @@
-import common.{type Location}
+import common.{type Direction, type Location, East, North, South, West}
 import gleam/dict
 import gleam/list
 import gleam/option.{type Option, None, Some}
@@ -6,13 +6,6 @@ import gleam/result
 import gleam/set.{type Set}
 import gleam/string
 import parallel_map
-
-pub type Direction {
-  North
-  East
-  South
-  West
-}
 
 pub type Guard {
   Guard(location: Location, direction: Direction)

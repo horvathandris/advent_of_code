@@ -1,11 +1,8 @@
 import common.{type Location}
-import gleam/dict
-import gleam/erlang/process
 import gleam/int
 import gleam/io
 import gleam/list
 import gleam/string
-import simplifile
 import util
 
 pub type Robot {
@@ -13,6 +10,7 @@ pub type Robot {
 }
 
 pub type Grid {
+  // todo: change to dict maybe?
   Grid(robots: List(Robot), size: #(Int, Int))
 }
 

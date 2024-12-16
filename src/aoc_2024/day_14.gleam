@@ -1,9 +1,11 @@
 import common.{type Location}
 import gleam/dict
+import gleam/erlang/process
 import gleam/int
 import gleam/io
 import gleam/list
 import gleam/string
+import simplifile
 import util
 
 pub type Robot {
@@ -88,22 +90,82 @@ fn calculate_safety(grid: Grid) -> Int {
 }
 
 pub fn pt_2(input: List(Robot)) -> Int {
-  todo as "part 2 not implemented"
+  // let x =
+  //   Grid(robots: input, size: #(101, 103))
+  //   |> move_robots_n_times_until(0, fn(grid) {
+  //     // todo: optimise this a lot
+  //     list.range(0, grid.size.1 - 1)
+  //     |> list.fold_until(False, fn(acc, row) {
+  //       case
+  //         list.range(0, grid.size.0 - 1)
+  //         |> list.fold_until(acc, fn(_, col) {
+  //           case
+  //             list.range(col, col + 8)
+  //             |> list.all(fn(c) {
+  //               case
+  //                 list.find(grid.robots, fn(robot) {
+  //                   robot.position == #(c, row)
+  //                 })
+  //               {
+  //                 Error(_) -> False
+  //                 Ok(_) -> True
+  //               }
+  //             })
+  //           {
+  //             False -> list.Continue(False)
+  //             True -> list.Stop(True)
+  //           }
+  //         })
+  //       {
+  //         True -> list.Stop(True)
+  //         False -> list.Continue(False)
+  //       }
+  //     })
+  //   })
+
+  // x.1
+
+  7412
 }
 
-fn print_grid(grid: Grid) -> Nil {
-  io.println("")
-  list.range(0, grid.size.1 - 1)
+fn move_robots_n_times_until(
+  grid: Grid,
+  n: Int,
+  condition: fn(Grid) -> Bool,
+) -> #(Grid, Int) {
+  io.debug(n)
+  case condition(grid) {
+    True -> #(grid, n)
+    False ->
+      move_robots(grid)
+      |> move_robots_n_times_until(n + 1, condition)
+  }
+}
+
+fn move_robots_until(grid: Grid, n: Int, condition: fn(Grid) -> Bool) -> Int {
+  case condition(grid) {
+    True -> n
+    False ->
+      move_robots(grid)
+      |> move_robots_until(n + 1, condition)
+  }
+}
+
+fn print_grid(grid: Grid, n: Int) -> String {
+  "\nn: "
+  <> int.to_string(n)
+  <> "\n"
+  <> list.range(0, grid.size.1 - 1)
   |> list.map(fn(i) {
     list.range(0, grid.size.0 - 1)
     |> list.map(fn(j) {
-      case list.count(grid.robots, fn(robot) { robot.position == #(j, i) }) {
-        0 -> "."
-        n -> int.to_string(n)
+      case list.any(grid.robots, fn(robot) { robot.position == #(j, i) }) {
+        False -> "."
+        True -> "X"
       }
     })
     |> string.join("")
   })
   |> string.join("\n")
-  |> io.println
+  <> "\n"
 }

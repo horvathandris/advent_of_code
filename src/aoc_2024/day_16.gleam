@@ -1,5 +1,4 @@
 import common.{type Direction, type Location}
-import gleam/io
 import gleam/list
 import gleam/option
 import gleam/set.{type Set}
@@ -44,7 +43,6 @@ fn a_star(
 }
 
 pub fn pt_1(input: Maze) -> Int {
-  io.debug(input)
   let _ = a_star(input, option.None, set.new(), 0)
   todo as "part 1 not implemented"
 }

@@ -1,6 +1,5 @@
 import common.{type Location}
 import gleam/int
-import gleam/io
 import gleam/list
 import gleam/string
 import util
@@ -128,7 +127,6 @@ fn move_robots_n_times_until(
   n: Int,
   condition: fn(Grid) -> Bool,
 ) -> #(Grid, Int) {
-  io.debug(n)
   case condition(grid) {
     True -> #(grid, n)
     False ->

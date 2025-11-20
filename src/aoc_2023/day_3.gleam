@@ -1,10 +1,9 @@
 import gleam/dict
 import gleam/int
-import gleam/io
 import gleam/list
+import gleam/result
 import gleam/set
 import gleam/string
-import parallel_map
 
 pub type Point {
   Point(x: Int, y: Int)
@@ -153,6 +152,40 @@ fn get_adjacent_points(point: Point) {
   ]
 }
 
-pub fn pt_2(input: Schema) {
-  todo as "part 2 not implemented"
+pub fn pt_2(input: Schema) -> Int {
+  let gears =
+    dict.filter(input.symbols, fn(_, symbol) { symbol == "*" })
+    |> dict.keys
+
+  let numbers = transform_numbers(input.numbers)
+
+  use sum, gear_point <- list.fold(gears, 0)
+  let adjacent_points = get_adjacent_points(gear_point)
+  let result =
+    {
+      use nums, point <- list.fold(adjacent_points, set.new())
+      case dict.get(numbers, point) {
+        Ok(number) -> set.insert(nums, number)
+        Error(_) -> nums
+      }
+    }
+    |> set.to_list
+
+  let ratio = case list.length(result) {
+    2 ->
+      result
+      |> list.map(fn(number) { number.value })
+      |> list.reduce(fn(a, b) { a * b })
+      |> result.unwrap(0)
+    _ -> 0
+  }
+
+  sum + ratio
+}
+
+fn transform_numbers(numbers: List(Number)) -> dict.Dict(Point, Number) {
+  use acc, number <- list.fold(numbers, dict.new())
+  list.map(number.points, fn(point) { #(point, number) })
+  |> dict.from_list
+  |> dict.merge(acc)
 }

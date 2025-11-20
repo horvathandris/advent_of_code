@@ -57,7 +57,7 @@ fn check_xmas(
     list.map(sequence, dict.get(input.matrix, _))
     |> result.all
     |> result.map(string.join(_, ""))
-    |> result.try(verify_sequence(_))
+    |> result.try(verify_sequence)
   })
   |> list.count(result.is_ok)
 }

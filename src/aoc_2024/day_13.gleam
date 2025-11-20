@@ -50,13 +50,10 @@ fn calculate_min_tokens(machine: Machine) {
 
 pub fn pt_2(input: List(Machine)) -> Int {
   list.map(input, fn(machine) {
-    Machine(
-      ..machine,
-      prize: #(
-        10_000_000_000_000 + machine.prize.0,
-        10_000_000_000_000 + machine.prize.1,
-      ),
-    )
+    Machine(..machine, prize: #(
+      10_000_000_000_000 + machine.prize.0,
+      10_000_000_000_000 + machine.prize.1,
+    ))
   })
   |> list.map(calculate_min_tokens)
   |> list.fold(0, int.add)

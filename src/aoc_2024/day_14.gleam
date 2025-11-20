@@ -49,13 +49,10 @@ fn move_robots(grid: Grid) -> Grid {
 }
 
 fn move_robot(robot: Robot, bounds: #(Int, Int)) -> Robot {
-  Robot(
-    ..robot,
-    position: #(
-      next_coordinate(robot.position.0, robot.velocity.0, bounds.0),
-      next_coordinate(robot.position.1, robot.velocity.1, bounds.1),
-    ),
-  )
+  Robot(..robot, position: #(
+    next_coordinate(robot.position.0, robot.velocity.0, bounds.0),
+    next_coordinate(robot.position.1, robot.velocity.1, bounds.1),
+  ))
 }
 
 fn next_coordinate(coordinate: Int, velocity: Int, bound: Int) {

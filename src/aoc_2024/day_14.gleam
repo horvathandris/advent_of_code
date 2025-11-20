@@ -84,7 +84,7 @@ fn calculate_safety(grid: Grid) -> Int {
   * acc
 }
 
-pub fn pt_2(input: List(Robot)) -> Int {
+pub fn pt_2(_input: List(Robot)) -> Int {
   // let x =
   //   Grid(robots: input, size: #(101, 103))
   //   |> move_robots_n_times_until(0, fn(grid) {

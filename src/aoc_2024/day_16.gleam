@@ -2,7 +2,6 @@ import common.{type Direction, type Location}
 import gleam/io
 import gleam/list
 import gleam/option
-import gleam/queue
 import gleam/set.{type Set}
 import gleam/string
 
@@ -31,12 +30,12 @@ pub fn parse(input: String) -> Maze {
 fn a_star(
   maze: Maze,
   last: option.Option(#(Direction, Location)),
-  seen: set.Set(Location),
-  cost: Int,
+  _seen: set.Set(Location),
+  _cost: Int,
 ) -> Result(Int, Nil) {
   case last {
     option.None -> todo
-    option.Some(#(direction, last_node)) ->
+    option.Some(#(_direction, last_node)) ->
       case last_node == maze.end {
         False -> todo
         True -> todo
@@ -46,10 +45,10 @@ fn a_star(
 
 pub fn pt_1(input: Maze) -> Int {
   io.debug(input)
-  a_star(input, option.None, set.new(), 0)
+  let _ = a_star(input, option.None, set.new(), 0)
   todo as "part 1 not implemented"
 }
 
-pub fn pt_2(input: Maze) {
+pub fn pt_2(_input: Maze) {
   todo as "part 2 not implemented"
 }

@@ -126,7 +126,7 @@ fn calculate_gps(location: Location) -> Int {
   { 100 * location.0 } + location.1
 }
 
-pub fn pt_2(input: #(Map, List(Direction))) -> Int {
+pub fn pt_2(_input: #(Map, List(Direction))) -> Int {
   todo as "part 2 not implemented"
 }
 

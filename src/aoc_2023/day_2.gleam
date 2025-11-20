@@ -91,5 +91,9 @@ fn max_balls_shown_in_game(game: Game) {
 }
 
 pub fn pt_2(input: List(Game)) {
-  todo as "part 2 not implemented"
+  use sum, game <- list.fold(input, 0)
+
+  let max_balls_shown = max_balls_shown_in_game(game)
+
+  sum + { max_balls_shown.red * max_balls_shown.green * max_balls_shown.blue }
 }

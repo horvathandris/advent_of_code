@@ -47,7 +47,7 @@ pub fn pt_1(input: DiskMap) -> Int {
 fn repartition_loop(input: List(Block)) -> List(Block) {
   let assert Ok(#(file, blocks)) =
     input
-    |> list.pop(fn(block) {
+    |> list_pop(fn(block) {
       case block {
         File(_, _) -> True
         Empty(_) -> False
@@ -122,7 +122,7 @@ fn repartition_loop_mod(left: List(Block), right: List(Block)) -> List(Block) {
       }
     })
 
-  case list.pop(split_before_file.1, fn(_) { True }) {
+  case list_pop(split_before_file.1, fn(_) { True }) {
     Ok(#(File(file_width, id), right)) -> {
       let #(success, right) =
         list.reverse(right)
@@ -157,5 +157,24 @@ fn repartition_loop_mod(left: List(Block), right: List(Block)) -> List(Block) {
       |> repartition_loop_mod(right)
     }
     _ -> list.append(left, split_before_file.0)
+  }
+}
+
+fn list_pop(list: List(a), fun: fn(a) -> Bool) -> Result(#(a, List(a)), Nil) {
+  pop_loop(list, fun, [])
+}
+
+fn pop_loop(
+  haystack: List(a),
+  fun: fn(a) -> Bool,
+  checked: List(a),
+) -> Result(#(a, List(a)), Nil) {
+  case haystack {
+    [] -> Error(Nil)
+    [first, ..rest] ->
+      case fun(first) {
+        True -> Ok(#(first, list.reverse(checked) |> list.append(rest)))
+        False -> pop_loop(rest, fun, [first, ..checked])
+      }
   }
 }

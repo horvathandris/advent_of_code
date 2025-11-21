@@ -1,5 +1,4 @@
 import common.{type Location}
-import gleam/bool
 import gleam/dict
 import gleam/int
 import gleam/list
@@ -128,7 +127,7 @@ fn count_corners(plants: Set(Location)) -> Int {
           list.all(possible_corner.0, set.contains(plants, _))
           && !set.contains(plants, possible_corner.1)
         }
-        |> bool.to_int
+        |> bool_to_int
         |> int.add(acc2)
       })
       |> int.add(acc1)
@@ -148,11 +147,18 @@ fn count_corners(plants: Set(Location)) -> Int {
       ]
       |> list.fold(0, fn(acc2, possible_corner) {
         !list.any(possible_corner, set.contains(plants, _))
-        |> bool.to_int
+        |> bool_to_int
         |> int.add(acc2)
       })
       |> int.add(acc1)
     })
 
   concave_corners + convex_corners
+}
+
+fn bool_to_int(bool: Bool) -> Int {
+  case bool {
+    True -> 1
+    False -> 0
+  }
 }

@@ -55,7 +55,6 @@ fn calculate_card(card: Card) -> Int {
 pub fn pt_2(input: List(Card)) {
   let matches =
     list.map(input, fn(card) { #(card.id, calculate_matches(card)) })
-    |> echo
 
   let initial =
     list.map(input, fn(card) { #(card.id, 1) })

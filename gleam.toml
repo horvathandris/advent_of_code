@@ -16,6 +16,7 @@ version = "1.0.0"
 gleam_stdlib = ">= 0.65.0 and < 2.0.0"
 gladvent = ">= 2.2.0 and < 3.0.0"
 parallel_map = ">=3.0.2 and < 4.0.0"
+gleam_community_maths = ">= 2.0.0 and < 3.0.0"
 
 [dev-dependencies]
 gleeunit = ">= 1.0.0 and < 2.0.0"
@@ -101,3 +102,7 @@ pt_1 = 1552879
 [gladvent.2025.1]
 pt_1 = 1052
 pt_2 = 6295
+
+[gladvent.2025.2]
+pt_1 = 24043483400
+pt_2 = 38262920235

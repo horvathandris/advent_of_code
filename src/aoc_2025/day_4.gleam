@@ -1,4 +1,3 @@
-import gleam/int
 import gleam/list
 import gleam/set
 import gleam/string
@@ -23,26 +22,6 @@ pub fn pt_1(input: Map) -> Int {
   remove_rolls(input).1
 }
 
-fn count_adjacent_rolls(position: Position, map: Map) {
-  [
-    #(position.0 - 1, position.1 - 1),
-    #(position.0 - 1, position.1),
-    #(position.0 - 1, position.1 + 1),
-    #(position.0, position.1 + 1),
-    #(position.0 + 1, position.1 + 1),
-    #(position.0 + 1, position.1),
-    #(position.0 + 1, position.1 - 1),
-    #(position.0, position.1 - 1),
-  ]
-  |> list.map(fn(adjacent_position) {
-    case set.contains(map, adjacent_position) {
-      True -> 1
-      False -> 0
-    }
-  })
-  |> int.sum
-}
-
 pub fn pt_2(input: Map) -> Int {
   remove_rolls_while_can(input, 0)
 }
@@ -60,8 +39,32 @@ fn remove_rolls(input: Map) -> #(Map, Int) {
     set.to_list(input),
     #(input, 0),
   )
-  case count_adjacent_rolls(position, input) {
-    x if x < 4 -> #(set.delete(current_map, position), removed_count + 1)
-    _ -> #(current_map, removed_count)
+  case can_be_removed(position, input) {
+    True -> #(set.delete(current_map, position), removed_count + 1)
+    False -> #(current_map, removed_count)
   }
+}
+
+fn can_be_removed(position: Position, map: Map) -> Bool {
+  [
+    #(position.0 - 1, position.1 - 1),
+    #(position.0 - 1, position.1),
+    #(position.0 - 1, position.1 + 1),
+    #(position.0, position.1 + 1),
+    #(position.0 + 1, position.1 + 1),
+    #(position.0 + 1, position.1),
+    #(position.0 + 1, position.1 - 1),
+    #(position.0, position.1 - 1),
+  ]
+  |> list.fold_until(#(0, True), fn(acc, adjacent_position) {
+    case set.contains(map, adjacent_position) {
+      True ->
+        case acc.0 >= 3 {
+          True -> list.Stop(#(0, False))
+          False -> list.Continue(#(acc.0 + 1, True))
+        }
+      False -> list.Continue(acc)
+    }
+  })
+  |> fn(result) { result.1 }
 }

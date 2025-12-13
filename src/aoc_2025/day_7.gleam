@@ -1,5 +1,4 @@
 import common
-import gleam/dict
 import gleam/list
 import gleam/result
 import gleam/set
@@ -15,14 +14,6 @@ pub type Diagram {
 
 type Progress {
   Progress(diagram: Diagram, beams: set.Set(common.Location), split_count: Int)
-}
-
-type AdvancedProgress {
-  AdvancedProgress(
-    diagram: Diagram,
-    beams: List(common.Location),
-    split_count: Int,
-  )
 }
 
 pub fn parse(input: String) -> Diagram {

@@ -94,5 +94,5 @@ fn split_beam(location: common.Location) -> set.Set(common.Location) {
 }
 
 pub fn pt_2(input: Diagram) -> Int {
-  todo
+  todo as "need to parse as a tree, and BFS"
 }
